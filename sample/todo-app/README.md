@@ -50,6 +50,22 @@ npm run dev
 
 브라우저에서 `http://localhost:5173` — API는 Vite 프록시로 `/api` → `http://localhost:8080`.
 
+### UI 변경 캡처 (로컬)
+
+프론트만 자동 기동 후 브라우저(Chromium)로 열어 **제목(`h1`)·전체 페이지**를 PNG로 남긴다. 백엔드가 꺼져 있어도 제목·레이아웃 캡처는 가능하다(API 호출은 실패 메시지가 보일 수 있음).
+
+```bash
+cd sample/todo-app/frontend
+npm install
+npx playwright install chromium   # 최초 1회
+npm run capture:ui
+```
+
+- **고정 이름(덮어쓰기):** `frontend/screenshots/latest-heading.png`, `latest-fullpage.png`
+- **타임스탬프:** `frontend/screenshots/heading-<ISO>.png`
+
+브라우저 창을 띄워 확인하려면 `npm run capture:ui:headed`.
+
 ## 하네스 연동
 
 - 계획: `../../plans/2026-04-20-sample-todo-app.md`
