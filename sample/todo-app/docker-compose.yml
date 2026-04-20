@@ -15,6 +15,6 @@ services:
       VITE_PROXY_TARGET: http://backend:8080
     command: sh -c "npm ci && npx vite --host 0.0.0.0 --port 5173"
     ports:
-      - "15173:5173"
+      - "5173:5173"
     depends_on:
       - backend

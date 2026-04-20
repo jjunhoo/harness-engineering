@@ -25,7 +25,7 @@ cd sample/todo-app
 docker compose up --build
 ```
 
-- UI: **http://localhost:15173** (호스트 포트; 컨테이너 내부는 5173)
+- UI: **http://localhost:5173** (호스트와 컨테이너 모두 5173)
 - API 직접: **http://localhost:18080/api/todos** (호스트 18080 → 컨테이너 8080)  
   중지: `Ctrl+C` 또는 `docker compose down`
 

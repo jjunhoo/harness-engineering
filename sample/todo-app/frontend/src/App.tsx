@@ -133,7 +133,7 @@ export function App() {
                 }}
                 aria-label={`추가 시각 ${formatAddedAt(todo.createdAt)}`}
               >
-                추가: {formatAddedAt(todo.createdAt)}
+                {formatAddedAt(todo.createdAt)}
               </div>
             </div>
             <button
