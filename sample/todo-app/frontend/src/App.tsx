@@ -2,6 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import type { Todo } from "./api";
 import { createTodo, deleteTodo, fetchTodos, updateTodo } from "./api";
 
+/** ISO-8601(서버 `Instant`) → 화면용 “추가 시각” */
+function formatAddedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  });
+}
+
 export function App() {
   const [items, setItems] = useState<Todo[]>([]);
   const [title, setTitle] = useState("");
@@ -106,15 +116,26 @@ export function App() {
                 }
               }}
             />
-            <span
-              style={{
-                flex: 1,
-                textDecoration: todo.completed ? "line-through" : "none",
-                color: todo.completed ? "#888" : "#111",
-              }}
-            >
-              {todo.title}
-            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  textDecoration: todo.completed ? "line-through" : "none",
+                  color: todo.completed ? "#888" : "#111",
+                }}
+              >
+                {todo.title}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.78rem",
+                  color: "#666",
+                  marginTop: 4,
+                }}
+                aria-label={`추가 시각 ${formatAddedAt(todo.createdAt)}`}
+              >
+                추가: {formatAddedAt(todo.createdAt)}
+              </div>
+            </div>
             <button
               type="button"
               onClick={async () => {
