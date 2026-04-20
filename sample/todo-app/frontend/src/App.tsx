@@ -40,7 +40,7 @@ export function App() {
 
   return (
     <div style={{ maxWidth: 560, margin: "2rem auto", fontFamily: "system-ui" }}>
-      <h1 style={{ fontSize: "1.5rem" }}>Todo (Harness 샘플)</h1>
+      <h1 style={{ fontSize: "1.5rem" }}>Todo Application</h1>
       <p style={{ color: "#555", fontSize: "0.9rem" }}>
         백엔드: Spring Boot · UI: React (Vite 프록시 <code>/api</code>)
       </p>
