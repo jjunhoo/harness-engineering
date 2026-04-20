@@ -1,0 +1,18 @@
+---
+description: Harness Engineering — AGENTS/DESIGN 기반 저장소 규칙 요약
+globs: "**/*"
+alwaysApply: true
+---
+
+# Harness Engineering (요약)
+
+- 최상위 헌장: `AGENTS.md`. 설계: `DESIGN.md`. 폴더 목적: `docs/FOLDER_PURPOSE.md`.
+- 작업은 `plans/`에 계획을 두고 `docs/WORKFLOW.md` 10단계 루프를 따른다.
+- 레이어: `architecture/LAYERED_MODEL.md` — 역방향 의존 금지.
+- 품질: `QUALITY_SCORE.md`, `evaluations/rubrics/QUALITY_RUBRIC.md`.
+- 보안: `SECURITY.md` — 비밀을 저장소에 두지 않는다.
+- 스킬: `skills/README.md`에서 작업 유형별 `SKILL.md`를 먼저 적용한다.
+- 머지 전: `bash scripts/harness-validate.sh`가 녹색이어야 한다.
+- 실행 루프 자동 게이트: `bash scripts/harness-agent-loop.sh run --all` (매핑: `docs/AGENT_LOOP_STEP_REFERENCE.md`).
+- 자동 점수: `bash evaluations/scripts/auto-score.sh` → `evaluations/reports/last-run.json`.
+- 멀티 리뷰: `docs/MULTI_AGENT_REVIEW.md`. 테스트 자동 생성: `docs/AUTO_TEST_GENERATION.md`. 로그 피드백: `docs/LOG_FEEDBACK.md`. 실패 자동 개선: `docs/AUTO_IMPROVEMENT_ON_FAILURE.md`.

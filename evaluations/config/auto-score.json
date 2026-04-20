@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "weights": {
+    "structure": 0.4,
+    "code_quality": 0.4,
+    "performance": 0.2
+  },
+  "performance": {
+    "excellent_ms": 4000,
+    "good_ms": 12000,
+    "acceptable_ms": 45000
+  },
+  "code_quality": {
+    "shellcheck_penalty_per_file": 12,
+    "shellcheck_missing_penalty": 15,
+    "secret_hit_score": 0
+  },
+  "gates": {
+    "min_overall": 55,
+    "fail_ci_below_min": true
+  }
+}
