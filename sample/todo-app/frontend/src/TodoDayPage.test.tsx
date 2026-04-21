@@ -178,7 +178,7 @@ describe("TodoDayPage", () => {
     expect(api.createTodo).not.toHaveBeenCalled();
   });
 
-  it("creates a todo and clears input", async () => {
+  it("creates a todo after 추가 then 등록, and shows title and time in list", async () => {
     const user = userEvent.setup();
     const created = {
       id: 9,
@@ -193,19 +193,26 @@ describe("TodoDayPage", () => {
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
     await user.type(screen.getByLabelText("새 할 일"), "new");
     await user.click(screen.getByRole("button", { name: "추가" }));
+    expect(api.createTodo).not.toHaveBeenCalled();
+    expect(screen.getByText(/「new」/)).toBeInTheDocument();
+    expect(screen.getByLabelText("일정 시")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "등록" }));
     expect(api.createTodo).toHaveBeenCalledWith("new", DAY, expect.stringMatching(/^2026-04-21T/));
     await waitFor(() => expect(screen.getByText("new")).toBeInTheDocument());
     const row = screen.getByRole("listitem");
     expect(within(row).getByLabelText(/^일정 시각 /)).toBeInTheDocument();
   });
 
-  it("hides time selects until calendar button is used", async () => {
+  it("restores title when 취소 after 추가", async () => {
     const user = userEvent.setup();
     renderDay();
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
-    expect(screen.queryByLabelText("일정 시")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /일정 시간/i }));
-    expect(screen.getByLabelText("일정 시")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("새 할 일"), "draft-only");
+    await user.click(screen.getByRole("button", { name: "추가" }));
+    expect(api.createTodo).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    expect(screen.getByLabelText("새 할 일")).toHaveValue("draft-only");
+    expect(api.createTodo).not.toHaveBeenCalled();
   });
 
   it("uses selected hour and minute in create payload", async () => {
@@ -221,11 +228,11 @@ describe("TodoDayPage", () => {
     vi.mocked(api.createTodo).mockResolvedValueOnce(created);
     renderDay();
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: /일정 시간/i }));
-    await user.selectOptions(screen.getByLabelText("일정 시"), "10");
-    await user.selectOptions(screen.getByLabelText("일정 분"), "15");
     await user.type(screen.getByLabelText("새 할 일"), "task");
     await user.click(screen.getByRole("button", { name: "추가" }));
+    await user.selectOptions(screen.getByLabelText("일정 시"), "10");
+    await user.selectOptions(screen.getByLabelText("일정 분"), "15");
+    await user.click(screen.getByRole("button", { name: "등록" }));
     const iso = vi.mocked(api.createTodo).mock.calls[0][2] as string;
     const parsed = new Date(iso);
     expect(parsed.getHours()).toBe(10);
@@ -239,6 +246,7 @@ describe("TodoDayPage", () => {
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
     await user.type(screen.getByLabelText("새 할 일"), "x");
     await user.click(screen.getByRole("button", { name: "추가" }));
+    await user.click(screen.getByRole("button", { name: "등록" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("no create"));
   });
 
@@ -249,6 +257,7 @@ describe("TodoDayPage", () => {
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
     await user.type(screen.getByLabelText("새 할 일"), "x");
     await user.click(screen.getByRole("button", { name: "추가" }));
+    await user.click(screen.getByRole("button", { name: "등록" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("create failed"));
   });
 

@@ -10,7 +10,6 @@ import { defaultHourMinuteForDateKey, localDateTimeToIso } from "./scheduleTime"
 import {
   countTodos,
   filterTodos,
-  formatScheduledTime,
   sortTodosByScheduleThenId,
   tabPanelLabelId,
   todoEmptyHint,
@@ -31,9 +30,9 @@ export function TodoDayPage() {
   const { items, setItems, loading, error, setError } = useInitialTodos(dateKey);
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const [draftTitle, setDraftTitle] = useState<string | null>(null);
   const [hour, setHour] = useState(9);
   const [minute, setMinute] = useState(0);
-  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
   const hourOptions = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
   const minuteOptions = useMemo(() => Array.from({ length: 60 }, (_, i) => i), []);
@@ -42,13 +41,8 @@ export function TodoDayPage() {
     const d = defaultHourMinuteForDateKey(dateKey);
     setHour(d.hour);
     setMinute(d.minute);
-    setTimePickerOpen(false);
+    setDraftTitle(null);
   }, [dateKey]);
-
-  const timePreviewLabel = useMemo(
-    () => formatScheduledTime(localDateTimeToIso(dateKey, hour, minute)),
-    [dateKey, hour, minute],
-  );
 
   const sorted = useMemo(() => sortTodosByScheduleThenId(items), [items]);
   const counts = useMemo(() => countTodos(items), [items]);
@@ -70,16 +64,30 @@ export function TodoDayPage() {
     setMinute(Number(e.target.value));
   }
 
-  async function handleCreate(e: FormEvent<HTMLFormElement>) {
+  function beginDraft(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
     setError(null);
+    setDraftTitle(t);
+    setTitle("");
+    const d = defaultHourMinuteForDateKey(dateKey);
+    setHour(d.hour);
+    setMinute(d.minute);
+  }
+
+  function cancelDraft() {
+    setTitle(draftTitle!);
+    setDraftTitle(null);
+    setError(null);
+  }
+
+  async function confirmDraft() {
+    setError(null);
     try {
       const scheduledAtIso = localDateTimeToIso(dateKey, hour, minute);
-      const created = await createTodo(t, dateKey, scheduledAtIso);
-      setTitle("");
-      setTimePickerOpen(false);
+      const created = await createTodo(draftTitle!, dateKey, scheduledAtIso);
+      setDraftTitle(null);
       setItems((prev) => [...prev, created]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "create failed");
@@ -122,79 +130,72 @@ export function TodoDayPage() {
           </p>
         </header>
 
-        <form className="app-form" onSubmit={handleCreate}>
-          <div className="app-form-row">
-            <input
-              className="app-input"
-              value={title}
-              onChange={handleTitleChange}
-              placeholder="무엇을 해야 하나요?"
-              aria-label="새 할 일"
-            />
-            <button className="app-btn-primary" type="submit" disabled={!title.trim()}>
-              추가
-            </button>
-          </div>
-          <div className="app-form-time">
-            <button
-              type="button"
-              className="app-btn-time-picker"
-              aria-expanded={timePickerOpen}
-              aria-controls="day-todo-time-fields"
-              onClick={() => setTimePickerOpen((open) => !open)}
+        {!draftTitle ? (
+          <form className="app-form" onSubmit={beginDraft}>
+            <div className="app-form-row">
+              <input
+                className="app-input"
+                value={title}
+                onChange={handleTitleChange}
+                placeholder="무엇을 해야 하나요?"
+                aria-label="새 할 일"
+                disabled={loading}
+              />
+              <button className="app-btn-primary" type="submit" disabled={!title.trim() || loading}>
+                추가
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="app-form app-form-draft">
+            <p className="app-draft-title" aria-live="polite">
+              「{draftTitle}」 몇 시에 하시겠어요?
+            </p>
+            <div
+              id="day-todo-time-fields"
+              className="app-form-time-panel"
+              role="group"
+              aria-label="시·분 선택"
             >
-              <span className="app-btn-time-picker__icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </span>
-              <span className="app-btn-time-picker__text">
-                <span className="app-btn-time-picker__muted">일정 시간</span>
-                <span className="app-btn-time-picker__value">{timePreviewLabel}</span>
-              </span>
-            </button>
-            {timePickerOpen ? (
-              <div
-                id="day-todo-time-fields"
-                className="app-form-time-panel"
-                role="group"
-                aria-label="시·분 선택"
+              <span className="app-form-time-label">시간</span>
+              <select
+                className="app-select"
+                aria-label="일정 시"
+                value={hour}
+                onChange={handleHourChange}
               >
-                <span className="app-form-time-label">시간</span>
-                <select
-                  className="app-select"
-                  aria-label="일정 시"
-                  value={hour}
-                  onChange={handleHourChange}
-                >
-                  {hourOptions.map((h) => (
-                    <option key={h} value={h}>
-                      {String(h).padStart(2, "0")}
-                    </option>
-                  ))}
-                </select>
-                <span className="app-form-time-sep" aria-hidden="true">
-                  :
-                </span>
-                <select
-                  className="app-select"
-                  aria-label="일정 분"
-                  value={minute}
-                  onChange={handleMinuteChange}
-                >
-                  {minuteOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {String(m).padStart(2, "0")}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
+                {hourOptions.map((h) => (
+                  <option key={h} value={h}>
+                    {String(h).padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+              <span className="app-form-time-sep" aria-hidden="true">
+                :
+              </span>
+              <select
+                className="app-select"
+                aria-label="일정 분"
+                value={minute}
+                onChange={handleMinuteChange}
+              >
+                {minuteOptions.map((m) => (
+                  <option key={m} value={m}>
+                    {String(m).padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="app-form-draft-actions">
+              <button className="app-btn-primary" type="button" onClick={() => void confirmDraft()}>
+                등록
+              </button>
+              <button className="app-btn-secondary" type="button" onClick={cancelDraft}>
+                취소
+              </button>
+            </div>
           </div>
-        </form>
+        )}
 
         {loading && (
           <p className="app-loading" aria-live="polite">

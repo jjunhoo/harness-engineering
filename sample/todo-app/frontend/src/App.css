@@ -89,63 +89,16 @@ body {
   min-width: 0;
 }
 
-.app-form-time {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
+.app-form-draft {
+  padding-bottom: 0.25rem;
 }
 
-.app-btn-time-picker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.75rem;
-  font: inherit;
-  font-size: 0.875rem;
-  color: var(--app-text);
-  background: #f8fafc;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-sm);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-}
-
-.app-btn-time-picker:hover {
-  border-color: #cbd5e1;
-  background: #fff;
-}
-
-.app-btn-time-picker[aria-expanded="true"] {
-  border-color: var(--app-primary);
-  box-shadow: 0 0 0 2px rgb(79 70 229 / 12%);
-}
-
-.app-btn-time-picker__icon {
-  display: flex;
-  color: var(--app-primary);
-  flex-shrink: 0;
-}
-
-.app-btn-time-picker__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  line-height: 1.2;
-}
-
-.app-btn-time-picker__muted {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--app-muted);
-}
-
-.app-btn-time-picker__value {
+.app-draft-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  font-size: 0.875rem;
+  color: var(--app-text);
+  line-height: 1.45;
 }
 
 .app-form-time-panel {
@@ -154,7 +107,31 @@ body {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.35rem 0 0;
+  padding: 0.15rem 0 0.5rem;
+}
+
+.app-form-draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.app-btn-secondary {
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--app-text);
+  background: #fff;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.app-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .app-form-time-label {
