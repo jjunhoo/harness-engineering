@@ -61,6 +61,14 @@ describe("sortTodosByScheduleThenId", () => {
     const a = [t({ id: 5, title: "x", scheduledAt: same }), t({ id: 2, title: "y", scheduledAt: same })];
     expect(sortTodosByScheduleThenId(a).map((x) => x.id)).toEqual([2, 5]);
   });
+
+  it("sorts invalid scheduledAt after valid times", () => {
+    const a = [
+      t({ id: 1, title: "bad", scheduledAt: "not-a-date" }),
+      t({ id: 2, title: "ok", scheduledAt: "2026-04-21T08:00:00.000Z" }),
+    ];
+    expect(sortTodosByScheduleThenId(a).map((x) => x.id)).toEqual([2, 1]);
+  });
 });
 
 describe("countTodos", () => {

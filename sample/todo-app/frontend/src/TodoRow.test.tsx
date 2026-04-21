@@ -32,6 +32,16 @@ describe("TodoRow", () => {
     await user.click(screen.getAllByRole("button", { name: /buy milk 삭제/i })[0]);
     expect(onDelete).toHaveBeenCalledWith(todo);
   });
+
+  it("shows schedule label and time under title", () => {
+    render(<TodoRow todo={todo} onToggle={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.getByText("buy milk")).toBeInTheDocument();
+    expect(screen.getByText("일정")).toBeInTheDocument();
+    const timeEl = document.querySelector("time[datetime]");
+    expect(timeEl).toBeTruthy();
+    expect(timeEl?.getAttribute("datetime")).toBe(todo.scheduledAt);
+    expect(screen.getByLabelText(/^일정 시각 /)).toBeInTheDocument();
+  });
 });
 
 describe("renderTodoRows", () => {

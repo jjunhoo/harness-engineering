@@ -88,7 +88,7 @@ export function TodoDayPage() {
       const scheduledAtIso = localDateTimeToIso(dateKey, hour, minute);
       const created = await createTodo(draftTitle!, dateKey, scheduledAtIso);
       setDraftTitle(null);
-      setItems((prev) => [...prev, created]);
+      setItems((prev) => sortTodosByScheduleThenId([...prev, created]));
     } catch (err) {
       setError(err instanceof Error ? err.message : "create failed");
     }

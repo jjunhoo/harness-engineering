@@ -29,10 +29,16 @@ export function formatScheduledTime(iso: string): string {
   });
 }
 
+function scheduledAtSortKey(iso: string): number {
+  const t = new Date(iso).getTime();
+  return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
+}
+
+/** 같은 날 목록: `scheduledAt` 오름차순(이른 시간이 위), 같으면 `id` 오름차순 */
 export function sortTodosByScheduleThenId(items: Todo[]): Todo[] {
   return [...items].sort((a, b) => {
-    const at = new Date(a.scheduledAt).getTime();
-    const bt = new Date(b.scheduledAt).getTime();
+    const at = scheduledAtSortKey(a.scheduledAt);
+    const bt = scheduledAtSortKey(b.scheduledAt);
     if (at !== bt) return at - bt;
     return a.id - b.id;
   });

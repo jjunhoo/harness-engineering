@@ -29,10 +29,15 @@ export function TodoRow({ todo, onToggle, onDelete }: Props) {
           {todo.title}
         </div>
         <div
-          className="app-row-meta"
+          className="app-row-schedule"
           aria-label={`일정 시각 ${formatScheduledTime(todo.scheduledAt)}`}
         >
-          {formatScheduledTime(todo.scheduledAt)}
+          <span className="app-row-schedule-label" aria-hidden="true">
+            일정
+          </span>
+          <time className="app-row-schedule-value" dateTime={todo.scheduledAt}>
+            {formatScheduledTime(todo.scheduledAt)}
+          </time>
         </div>
       </div>
       <button
