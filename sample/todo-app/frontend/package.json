@@ -10,7 +10,8 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "capture:ui": "playwright test e2e/capture-ui.spec.ts",
-    "capture:ui:headed": "playwright test e2e/capture-ui.spec.ts --headed"
+    "capture:ui:headed": "playwright test e2e/capture-ui.spec.ts --headed",
+    "capture:readme": "playwright test e2e/readme-screenshots.spec.ts"
   },
   "dependencies": {
     "react": "^18.2.0",

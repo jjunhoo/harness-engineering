@@ -1,6 +1,10 @@
 node_modules/
 dist/
-screenshots/
+# 로컬/CI에서 덮어쓰는 캡처 — README에 넣는 고정 이미지만 버전 관리
+screenshots/*
+!screenshots/readme-01-calendar.png
+!screenshots/readme-02-day-todos.png
+!screenshots/readme-03-day-filter-active.png
 test-results/
 playwright-report/
 playwright/.cache/
