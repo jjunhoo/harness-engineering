@@ -195,6 +195,17 @@ describe("TodoDayPage", () => {
     await user.click(screen.getByRole("button", { name: "추가" }));
     expect(api.createTodo).toHaveBeenCalledWith("new", DAY, expect.stringMatching(/^2026-04-21T/));
     await waitFor(() => expect(screen.getByText("new")).toBeInTheDocument());
+    const row = screen.getByRole("listitem");
+    expect(within(row).getByLabelText(/^일정 시각 /)).toBeInTheDocument();
+  });
+
+  it("hides time selects until calendar button is used", async () => {
+    const user = userEvent.setup();
+    renderDay();
+    await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
+    expect(screen.queryByLabelText("일정 시")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /일정 시간/i }));
+    expect(screen.getByLabelText("일정 시")).toBeInTheDocument();
   });
 
   it("uses selected hour and minute in create payload", async () => {
@@ -210,6 +221,7 @@ describe("TodoDayPage", () => {
     vi.mocked(api.createTodo).mockResolvedValueOnce(created);
     renderDay();
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: /일정 시간/i }));
     await user.selectOptions(screen.getByLabelText("일정 시"), "10");
     await user.selectOptions(screen.getByLabelText("일정 분"), "15");
     await user.type(screen.getByLabelText("새 할 일"), "task");

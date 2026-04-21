@@ -10,6 +10,7 @@ import { defaultHourMinuteForDateKey, localDateTimeToIso } from "./scheduleTime"
 import {
   countTodos,
   filterTodos,
+  formatScheduledTime,
   sortTodosByScheduleThenId,
   tabPanelLabelId,
   todoEmptyHint,
@@ -32,6 +33,7 @@ export function TodoDayPage() {
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [hour, setHour] = useState(9);
   const [minute, setMinute] = useState(0);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
   const hourOptions = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
   const minuteOptions = useMemo(() => Array.from({ length: 60 }, (_, i) => i), []);
@@ -40,7 +42,13 @@ export function TodoDayPage() {
     const d = defaultHourMinuteForDateKey(dateKey);
     setHour(d.hour);
     setMinute(d.minute);
+    setTimePickerOpen(false);
   }, [dateKey]);
+
+  const timePreviewLabel = useMemo(
+    () => formatScheduledTime(localDateTimeToIso(dateKey, hour, minute)),
+    [dateKey, hour, minute],
+  );
 
   const sorted = useMemo(() => sortTodosByScheduleThenId(items), [items]);
   const counts = useMemo(() => countTodos(items), [items]);
@@ -71,6 +79,7 @@ export function TodoDayPage() {
       const scheduledAtIso = localDateTimeToIso(dateKey, hour, minute);
       const created = await createTodo(t, dateKey, scheduledAtIso);
       setTitle("");
+      setTimePickerOpen(false);
       setItems((prev) => [...prev, created]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "create failed");
@@ -126,35 +135,64 @@ export function TodoDayPage() {
               추가
             </button>
           </div>
-          <div className="app-form-time" role="group" aria-label="일정 시각">
-            <span className="app-form-time-label">시간</span>
-            <select
-              className="app-select"
-              aria-label="일정 시"
-              value={hour}
-              onChange={handleHourChange}
+          <div className="app-form-time">
+            <button
+              type="button"
+              className="app-btn-time-picker"
+              aria-expanded={timePickerOpen}
+              aria-controls="day-todo-time-fields"
+              onClick={() => setTimePickerOpen((open) => !open)}
             >
-              {hourOptions.map((h) => (
-                <option key={h} value={h}>
-                  {String(h).padStart(2, "0")}
-                </option>
-              ))}
-            </select>
-            <span className="app-form-time-sep" aria-hidden="true">
-              :
-            </span>
-            <select
-              className="app-select"
-              aria-label="일정 분"
-              value={minute}
-              onChange={handleMinuteChange}
-            >
-              {minuteOptions.map((m) => (
-                <option key={m} value={m}>
-                  {String(m).padStart(2, "0")}
-                </option>
-              ))}
-            </select>
+              <span className="app-btn-time-picker__icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </span>
+              <span className="app-btn-time-picker__text">
+                <span className="app-btn-time-picker__muted">일정 시간</span>
+                <span className="app-btn-time-picker__value">{timePreviewLabel}</span>
+              </span>
+            </button>
+            {timePickerOpen ? (
+              <div
+                id="day-todo-time-fields"
+                className="app-form-time-panel"
+                role="group"
+                aria-label="시·분 선택"
+              >
+                <span className="app-form-time-label">시간</span>
+                <select
+                  className="app-select"
+                  aria-label="일정 시"
+                  value={hour}
+                  onChange={handleHourChange}
+                >
+                  {hourOptions.map((h) => (
+                    <option key={h} value={h}>
+                      {String(h).padStart(2, "0")}
+                    </option>
+                  ))}
+                </select>
+                <span className="app-form-time-sep" aria-hidden="true">
+                  :
+                </span>
+                <select
+                  className="app-select"
+                  aria-label="일정 분"
+                  value={minute}
+                  onChange={handleMinuteChange}
+                >
+                  {minuteOptions.map((m) => (
+                    <option key={m} value={m}>
+                      {String(m).padStart(2, "0")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </div>
         </form>
 
