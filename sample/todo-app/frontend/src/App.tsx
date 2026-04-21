@@ -1,158 +1,124 @@
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ChangeEvent, useMemo, useState } from "react";
 import type { Todo } from "./api";
-import { createTodo, deleteTodo, fetchTodos, updateTodo } from "./api";
+import { createTodo, deleteTodo, updateTodo } from "./api";
+import "./App.css";
+import { FilterTabBar } from "./FilterTabBar";
+import { renderTodoRows } from "./TodoRow";
+import {
+  countTodos,
+  filterTodos,
+  sortTodosById,
+  todoEmptyHint,
+  type TodoFilter,
+} from "./todoView";
+import { useInitialTodos } from "./useInitialTodos";
 
-/** ISO-8601(서버 `Instant`) → 화면용 “추가 시각” */
-function formatAddedAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-  });
-}
+export type { TodoFilter } from "./todoView";
 
 export function App() {
-  const [items, setItems] = useState<Todo[]>([]);
+  const { items, setItems, loading, error, setError } = useInitialTodos();
   const [title, setTitle] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<TodoFilter>("all");
 
-  const sorted = useMemo(
-    () => [...items].sort((a, b) => a.id - b.id),
-    [items],
+  const sorted = useMemo(() => sortTodosById(items), [items]);
+  const counts = useMemo(() => countTodos(items), [items]);
+  const filtered = useMemo(() => filterTodos(sorted, filter), [sorted, filter]);
+  const emptyMessage = useMemo(
+    () => todoEmptyHint(sorted, filtered, filter),
+    [sorted, filtered, filter],
   );
 
-  async function reload() {
-    setError(null);
-    const data = await fetchTodos();
-    setItems(data);
+  function handleTitleChange(e: ChangeEvent<HTMLInputElement>) {
+    setTitle(e.target.value);
   }
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        await reload();
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "load failed");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  async function handleCreate(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const t = title.trim();
+    if (!t) return;
+    setError(null);
+    try {
+      const created = await createTodo(t);
+      setTitle("");
+      setItems((prev) => [...prev, created]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "create failed");
+    }
+  }
+
+  async function handleToggle(todo: Todo) {
+    setError(null);
+    try {
+      const next = await updateTodo(todo.id, {
+        completed: !todo.completed,
+      });
+      setItems((prev) => prev.map((x) => (x.id === next.id ? next : x)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "update failed");
+    }
+  }
+
+  async function handleDelete(todo: Todo) {
+    setError(null);
+    try {
+      await deleteTodo(todo.id);
+      setItems((prev) => prev.filter((x) => x.id !== todo.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "delete failed");
+    }
+  }
 
   return (
-    <div style={{ maxWidth: 560, margin: "2rem auto", fontFamily: "system-ui" }}>
-      <h1 style={{ fontSize: "1.5rem" }}>Todo Application</h1>
-      <p style={{ color: "#555", fontSize: "0.9rem" }}>
-        백엔드: Spring Boot · UI: React (Vite 프록시 <code>/api</code>)
-      </p>
+    <div className="app-page">
+      <div className="app-card">
+        <header className="app-header">
+          <h1 className="app-title">할 일</h1>
+          <p className="app-subtitle">
+            Spring Boot API · Vite 프록시 <code>/api</code>
+          </p>
+        </header>
 
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const t = title.trim();
-          if (!t) return;
-          setError(null);
-          try {
-            const created = await createTodo(t);
-            setTitle("");
-            setItems((prev) => [...prev, created]);
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "create failed");
+        <form className="app-form" onSubmit={handleCreate}>
+          <input
+            className="app-input"
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="무엇을 해야 하나요?"
+            aria-label="새 할 일"
+          />
+          <button className="app-btn-primary" type="submit" disabled={!title.trim()}>
+            추가
+          </button>
+        </form>
+
+        {loading && (
+          <p className="app-loading" aria-live="polite">
+            불러오는 중…
+          </p>
+        )}
+        {error && (
+          <p className="app-alert" role="alert">
+            {error}
+          </p>
+        )}
+
+        <FilterTabBar filter={filter} counts={counts} onFilter={setFilter} />
+
+        <div
+          className="app-panel"
+          role="tabpanel"
+          id="todo-panel"
+          aria-labelledby={
+            filter === "all" ? "tab-all" : filter === "active" ? "tab-active" : "tab-completed"
           }
-        }}
-        style={{ display: "flex", gap: 8, marginBottom: 16 }}
-      >
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="새 할 일"
-          style={{ flex: 1, padding: "0.5rem 0.6rem" }}
-        />
-        <button type="submit" disabled={!title.trim()}>
-          추가
-        </button>
-      </form>
-
-      {loading && <p>불러오는 중…</p>}
-      {error && (
-        <p style={{ color: "crimson", whiteSpace: "pre-wrap" }} role="alert">
-          {error}
-        </p>
-      )}
-
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {sorted.map((todo) => (
-          <li
-            key={todo.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 0",
-              borderBottom: "1px solid #eee",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={todo.completed}
-              onChange={async () => {
-                setError(null);
-                try {
-                  const next = await updateTodo(todo.id, {
-                    completed: !todo.completed,
-                  });
-                  setItems((prev) => prev.map((x) => (x.id === next.id ? next : x)));
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : "update failed");
-                }
-              }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  textDecoration: todo.completed ? "line-through" : "none",
-                  color: todo.completed ? "#888" : "#111",
-                }}
-              >
-                {todo.title}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.78rem",
-                  color: "#666",
-                  marginTop: 4,
-                }}
-                aria-label={`추가 시각 ${formatAddedAt(todo.createdAt)}`}
-              >
-                {formatAddedAt(todo.createdAt)}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                setError(null);
-                try {
-                  await deleteTodo(todo.id);
-                  setItems((prev) => prev.filter((x) => x.id !== todo.id));
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : "delete failed");
-                }
-              }}
-            >
-              삭제
-            </button>
-          </li>
-        ))}
-      </ul>
+        >
+          {emptyMessage ? (
+            <p className="app-empty">{emptyMessage}</p>
+          ) : (
+            <ul className="app-list">{renderTodoRows(filtered, handleToggle, handleDelete)}</ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
