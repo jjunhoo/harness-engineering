@@ -1,13 +1,16 @@
 import { type FormEvent, type ChangeEvent, useMemo, useState } from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
 import type { Todo } from "./api";
 import { createTodo, deleteTodo, updateTodo } from "./api";
 import "./App.css";
+import { dayRouteParam, formatDayHeading, isValidDateKey } from "./calendarMonth";
 import { FilterTabBar } from "./FilterTabBar";
 import { renderTodoRows } from "./TodoRow";
 import {
   countTodos,
   filterTodos,
   sortTodosById,
+  tabPanelLabelId,
   todoEmptyHint,
   type TodoFilter,
 } from "./todoView";
@@ -15,8 +18,15 @@ import { useInitialTodos } from "./useInitialTodos";
 
 export type { TodoFilter } from "./todoView";
 
-export function App() {
-  const { items, setItems, loading, error, setError } = useInitialTodos();
+export function TodoDayPage() {
+  const { date } = useParams<{ date: string }>();
+  const dateKey = dayRouteParam(date);
+
+  if (!isValidDateKey(dateKey)) {
+    return <Navigate to="/" replace />;
+  }
+
+  const { items, setItems, loading, error, setError } = useInitialTodos(dateKey);
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState<TodoFilter>("all");
 
@@ -38,7 +48,7 @@ export function App() {
     if (!t) return;
     setError(null);
     try {
-      const created = await createTodo(t);
+      const created = await createTodo(t, dateKey);
       setTitle("");
       setItems((prev) => [...prev, created]);
     } catch (err) {
@@ -71,7 +81,11 @@ export function App() {
   return (
     <div className="app-page">
       <div className="app-card">
+        <Link className="cal-back" to="/">
+          ← 캘린더
+        </Link>
         <header className="app-header">
+          <p className="cal-day-title">{formatDayHeading(dateKey)}</p>
           <h1 className="app-title">할 일</h1>
           <p className="app-subtitle">
             Spring Boot API · Vite 프록시 <code>/api</code>
@@ -108,9 +122,7 @@ export function App() {
           className="app-panel"
           role="tabpanel"
           id="todo-panel"
-          aria-labelledby={
-            filter === "all" ? "tab-all" : filter === "active" ? "tab-active" : "tab-completed"
-          }
+          aria-labelledby={tabPanelLabelId(filter)}
         >
           {emptyMessage ? (
             <p className="app-empty">{emptyMessage}</p>

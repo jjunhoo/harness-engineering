@@ -5,6 +5,7 @@ import com.harness.sample.todo.dto.CreateTodoRequest;
 import com.harness.sample.todo.dto.TodoDto;
 import com.harness.sample.todo.dto.UpdateTodoRequest;
 import com.harness.sample.todo.repository.TodoRepository;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,20 @@ public class TodoService {
   }
 
   @Transactional(readOnly = true)
-  public List<TodoDto> list() {
+  public List<TodoDto> listAll() {
     return todos.findAll().stream().map(TodoDto::from).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<TodoDto> listByDate(LocalDate date) {
+    return todos.findByScheduledDateOrderByIdAsc(date).stream().map(TodoDto::from).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<TodoDto> listBetween(LocalDate fromInclusive, LocalDate toInclusive) {
+    return todos.findByScheduledDateBetweenOrderByIdAsc(fromInclusive, toInclusive).stream()
+        .map(TodoDto::from)
+        .toList();
   }
 
   @Transactional
@@ -28,6 +41,7 @@ public class TodoService {
     Todo t = new Todo();
     t.setTitle(req.title().trim());
     t.setCompleted(false);
+    t.setScheduledDate(req.scheduledDate());
     return TodoDto.from(todos.save(t));
   }
 
@@ -39,6 +53,9 @@ public class TodoService {
     }
     if (req.completed() != null) {
       t.setCompleted(req.completed());
+    }
+    if (req.scheduledDate() != null) {
+      t.setScheduledDate(req.scheduledDate());
     }
     return TodoDto.from(todos.save(t));
   }

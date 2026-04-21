@@ -1,8 +1,8 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { Todo } from "./api";
-import { fetchTodos } from "./api";
+import { fetchTodosForDate } from "./api";
 
-export function useInitialTodos(): {
+export function useInitialTodos(scheduledDateKey: string): {
   items: Todo[];
   setItems: Dispatch<SetStateAction<Todo[]>>;
   loading: boolean;
@@ -20,7 +20,7 @@ export function useInitialTodos(): {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchTodos();
+        const data = await fetchTodosForDate(scheduledDateKey);
         if (!cancelled) setItems(data);
       } catch (e) {
         if (!cancelled) {
@@ -36,7 +36,7 @@ export function useInitialTodos(): {
     return function cleanup() {
       cancelled = true;
     };
-  }, []);
+  }, [scheduledDateKey]);
 
   return { items, setItems, loading, error, setError };
 }

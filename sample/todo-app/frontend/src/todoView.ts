@@ -2,6 +2,12 @@ import type { Todo } from "./api";
 
 export type TodoFilter = "all" | "active" | "completed";
 
+export function tabPanelLabelId(filter: TodoFilter): string {
+  if (filter === "all") return "tab-all";
+  if (filter === "active") return "tab-active";
+  return "tab-completed";
+}
+
 /** ISO-8601(서버 `Instant`) → 화면용 “추가 시각” */
 export function formatAddedAt(iso: string): string {
   const d = new Date(iso);

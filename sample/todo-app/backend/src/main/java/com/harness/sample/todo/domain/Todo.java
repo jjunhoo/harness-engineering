@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "todos")
@@ -25,6 +26,9 @@ public class Todo {
 
   @Column(nullable = false)
   private Instant createdAt;
+
+  @Column(nullable = false)
+  private LocalDate scheduledDate;
 
   @PrePersist
   void onCreate() {
@@ -55,5 +59,13 @@ public class Todo {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public LocalDate getScheduledDate() {
+    return scheduledDate;
+  }
+
+  public void setScheduledDate(LocalDate scheduledDate) {
+    this.scheduledDate = scheduledDate;
   }
 }

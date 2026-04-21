@@ -5,6 +5,7 @@ import {
   filterTodos,
   formatAddedAt,
   sortTodosById,
+  tabPanelLabelId,
   todoEmptyHint,
 } from "./todoView";
 
@@ -13,6 +14,14 @@ const t = (over: Partial<Todo> & Pick<Todo, "id" | "title">): Todo => ({
   title: over.title,
   completed: over.completed ?? false,
   createdAt: over.createdAt ?? "2026-01-01T00:00:00.000Z",
+});
+
+describe("tabPanelLabelId", () => {
+  it("maps filters to tab ids", () => {
+    expect(tabPanelLabelId("all")).toBe("tab-all");
+    expect(tabPanelLabelId("active")).toBe("tab-active");
+    expect(tabPanelLabelId("completed")).toBe("tab-completed");
+  });
 });
 
 describe("formatAddedAt", () => {
