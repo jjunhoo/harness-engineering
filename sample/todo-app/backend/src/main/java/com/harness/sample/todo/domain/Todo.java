@@ -30,6 +30,10 @@ public class Todo {
   @Column(nullable = false)
   private LocalDate scheduledDate;
 
+  /** 사용자가 지정한 일정 시각(날짜·시간). 화면 표시·같은 날 정렬에 사용 */
+  @Column(nullable = false)
+  private Instant scheduledAt;
+
   @PrePersist
   void onCreate() {
     if (createdAt == null) {
@@ -67,5 +71,13 @@ public class Todo {
 
   public void setScheduledDate(LocalDate scheduledDate) {
     this.scheduledDate = scheduledDate;
+  }
+
+  public Instant getScheduledAt() {
+    return scheduledAt;
+  }
+
+  public void setScheduledAt(Instant scheduledAt) {
+    this.scheduledAt = scheduledAt;
   }
 }

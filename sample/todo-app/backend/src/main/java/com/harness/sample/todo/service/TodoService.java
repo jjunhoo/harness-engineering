@@ -26,12 +26,15 @@ public class TodoService {
 
   @Transactional(readOnly = true)
   public List<TodoDto> listByDate(LocalDate date) {
-    return todos.findByScheduledDateOrderByIdAsc(date).stream().map(TodoDto::from).toList();
+    return todos.findByScheduledDateOrderByScheduledAtAscIdAsc(date).stream()
+        .map(TodoDto::from)
+        .toList();
   }
 
   @Transactional(readOnly = true)
   public List<TodoDto> listBetween(LocalDate fromInclusive, LocalDate toInclusive) {
-    return todos.findByScheduledDateBetweenOrderByIdAsc(fromInclusive, toInclusive).stream()
+    return todos.findByScheduledDateBetweenOrderByScheduledAtAscIdAsc(fromInclusive, toInclusive)
+        .stream()
         .map(TodoDto::from)
         .toList();
   }
@@ -42,6 +45,7 @@ public class TodoService {
     t.setTitle(req.title().trim());
     t.setCompleted(false);
     t.setScheduledDate(req.scheduledDate());
+    t.setScheduledAt(req.scheduledAt());
     return TodoDto.from(todos.save(t));
   }
 
@@ -56,6 +60,9 @@ public class TodoService {
     }
     if (req.scheduledDate() != null) {
       t.setScheduledDate(req.scheduledDate());
+    }
+    if (req.scheduledAt() != null) {
+      t.setScheduledAt(req.scheduledAt());
     }
     return TodoDto.from(todos.save(t));
   }

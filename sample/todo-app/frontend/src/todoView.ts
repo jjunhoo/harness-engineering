@@ -18,8 +18,24 @@ export function formatAddedAt(iso: string): string {
   });
 }
 
-export function sortTodosById(items: Todo[]): Todo[] {
-  return [...items].sort((a, b) => a.id - b.id);
+/** 일별 화면: 같은 날짜 제목 아래에는 시·분만 표시 */
+export function formatScheduledTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("ko-KR", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+export function sortTodosByScheduleThenId(items: Todo[]): Todo[] {
+  return [...items].sort((a, b) => {
+    const at = new Date(a.scheduledAt).getTime();
+    const bt = new Date(b.scheduledAt).getTime();
+    if (at !== bt) return at - bt;
+    return a.id - b.id;
+  });
 }
 
 export function countTodos(items: Todo[]): { all: number; active: number; completed: number } {

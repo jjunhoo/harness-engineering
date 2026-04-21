@@ -4,7 +4,8 @@ import {
   countTodos,
   filterTodos,
   formatAddedAt,
-  sortTodosById,
+  formatScheduledTime,
+  sortTodosByScheduleThenId,
   tabPanelLabelId,
   todoEmptyHint,
 } from "./todoView";
@@ -14,6 +15,8 @@ const t = (over: Partial<Todo> & Pick<Todo, "id" | "title">): Todo => ({
   title: over.title,
   completed: over.completed ?? false,
   createdAt: over.createdAt ?? "2026-01-01T00:00:00.000Z",
+  scheduledDate: over.scheduledDate ?? "2026-04-21",
+  scheduledAt: over.scheduledAt ?? "2026-04-21T12:00:00.000Z",
 });
 
 describe("tabPanelLabelId", () => {
@@ -34,10 +37,29 @@ describe("formatAddedAt", () => {
   });
 });
 
-describe("sortTodosById", () => {
-  it("sorts by id ascending", () => {
-    const a = [t({ id: 3, title: "c" }), t({ id: 1, title: "a" })];
-    expect(sortTodosById(a).map((x) => x.id)).toEqual([1, 3]);
+describe("formatScheduledTime", () => {
+  it("formats valid ISO as local time label", () => {
+    expect(formatScheduledTime("2026-04-21T08:46:21.000Z")).toMatch(/\d/);
+  });
+
+  it("returns raw string for invalid date", () => {
+    expect(formatScheduledTime("not-a-date")).toBe("not-a-date");
+  });
+});
+
+describe("sortTodosByScheduleThenId", () => {
+  it("sorts by scheduledAt then id", () => {
+    const a = [
+      t({ id: 2, title: "b", scheduledAt: "2026-04-21T10:00:00.000Z" }),
+      t({ id: 1, title: "a", scheduledAt: "2026-04-21T09:00:00.000Z" }),
+    ];
+    expect(sortTodosByScheduleThenId(a).map((x) => x.id)).toEqual([1, 2]);
+  });
+
+  it("uses id when scheduledAt ties", () => {
+    const same = "2026-04-21T09:00:00.000Z";
+    const a = [t({ id: 5, title: "x", scheduledAt: same }), t({ id: 2, title: "y", scheduledAt: same })];
+    expect(sortTodosByScheduleThenId(a).map((x) => x.id)).toEqual([2, 5]);
   });
 });
 

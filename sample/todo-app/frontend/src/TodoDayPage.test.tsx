@@ -26,6 +26,7 @@ const baseTodo = {
   completed: false,
   createdAt: "2026-04-21T08:46:21.000Z",
   scheduledDate: DAY,
+  scheduledAt: "2026-04-21T08:46:21.000Z",
 };
 
 function tablist() {
@@ -71,7 +72,8 @@ describe("TodoDayPage", () => {
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
     expect(document.getElementById("todo-panel")).toHaveAttribute("aria-labelledby", "tab-all");
     expect(screen.getByText("one")).toBeInTheDocument();
-    const stamp = screen.getByLabelText(/추가 시각/i);
+    const row = screen.getByRole("listitem");
+    const stamp = within(row).getByLabelText(/^일정 시각 /);
     expect(stamp.textContent?.length).toBeGreaterThan(0);
   });
 
@@ -89,6 +91,7 @@ describe("TodoDayPage", () => {
       completed: true,
       createdAt: baseTodo.createdAt,
       scheduledDate: DAY,
+      scheduledAt: "2026-04-21T10:00:00.000Z",
     };
     vi.mocked(api.fetchTodosForDate).mockResolvedValueOnce([baseTodo, done]);
     renderDay();
@@ -107,6 +110,7 @@ describe("TodoDayPage", () => {
       completed: true,
       createdAt: baseTodo.createdAt,
       scheduledDate: DAY,
+      scheduledAt: "2026-04-21T10:00:00.000Z",
     };
     vi.mocked(api.fetchTodosForDate).mockResolvedValueOnce([baseTodo, done]);
     renderDay();
@@ -128,6 +132,7 @@ describe("TodoDayPage", () => {
       completed: true,
       createdAt: baseTodo.createdAt,
       scheduledDate: DAY,
+      scheduledAt: "2026-04-21T11:00:00.000Z",
     };
     vi.mocked(api.fetchTodosForDate).mockResolvedValueOnce([done]);
     renderDay();
@@ -145,9 +150,9 @@ describe("TodoDayPage", () => {
     expect(screen.getByText("완료된 할 일이 없습니다.")).toBeInTheDocument();
   });
 
-  it("shows invalid createdAt as raw string", async () => {
+  it("shows invalid scheduledAt as raw string", async () => {
     vi.mocked(api.fetchTodosForDate).mockResolvedValueOnce([
-      { ...baseTodo, createdAt: "not-a-date" },
+      { ...baseTodo, scheduledAt: "not-a-date" },
     ]);
     renderDay();
     await waitFor(() => expect(screen.getByText("not-a-date")).toBeInTheDocument());
@@ -181,14 +186,38 @@ describe("TodoDayPage", () => {
       completed: false,
       createdAt: "2026-01-01T00:00:00.000Z",
       scheduledDate: DAY,
+      scheduledAt: "2026-04-21T09:00:00.000Z",
     };
     vi.mocked(api.createTodo).mockResolvedValueOnce(created);
     renderDay();
     await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
     await user.type(screen.getByLabelText("새 할 일"), "new");
     await user.click(screen.getByRole("button", { name: "추가" }));
-    expect(api.createTodo).toHaveBeenCalledWith("new", DAY);
+    expect(api.createTodo).toHaveBeenCalledWith("new", DAY, expect.stringMatching(/^2026-04-21T/));
     await waitFor(() => expect(screen.getByText("new")).toBeInTheDocument());
+  });
+
+  it("uses selected hour and minute in create payload", async () => {
+    const user = userEvent.setup();
+    const created = {
+      id: 9,
+      title: "task",
+      completed: false,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      scheduledDate: DAY,
+      scheduledAt: "2026-04-21T10:15:00.000Z",
+    };
+    vi.mocked(api.createTodo).mockResolvedValueOnce(created);
+    renderDay();
+    await waitFor(() => expect(screen.queryByText(/불러오는 중/)).not.toBeInTheDocument());
+    await user.selectOptions(screen.getByLabelText("일정 시"), "10");
+    await user.selectOptions(screen.getByLabelText("일정 분"), "15");
+    await user.type(screen.getByLabelText("새 할 일"), "task");
+    await user.click(screen.getByRole("button", { name: "추가" }));
+    const iso = vi.mocked(api.createTodo).mock.calls[0][2] as string;
+    const parsed = new Date(iso);
+    expect(parsed.getHours()).toBe(10);
+    expect(parsed.getMinutes()).toBe(15);
   });
 
   it("shows create error", async () => {
@@ -229,6 +258,7 @@ describe("TodoDayPage", () => {
       completed: false,
       createdAt: baseTodo.createdAt,
       scheduledDate: DAY,
+      scheduledAt: "2026-04-21T12:00:00.000Z",
     };
     vi.mocked(api.fetchTodosForDate).mockResolvedValueOnce([baseTodo, second]);
     vi.mocked(api.updateTodo).mockResolvedValueOnce({ ...baseTodo, completed: true });

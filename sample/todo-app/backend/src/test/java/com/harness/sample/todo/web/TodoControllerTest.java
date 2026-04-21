@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harness.sample.todo.dto.CreateTodoRequest;
 import com.harness.sample.todo.dto.UpdateTodoRequest;
+import java.time.Instant;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ class TodoControllerTest {
 
   private static final LocalDate D1 = LocalDate.of(2026, 4, 20);
   private static final LocalDate D2 = LocalDate.of(2026, 4, 21);
+  private static final Instant AT1 = Instant.parse("2026-04-20T02:30:00Z");
+  private static final Instant AT2 = Instant.parse("2026-04-21T05:00:00Z");
 
   @Test
   void crudFlow() throws Exception {
@@ -37,11 +40,12 @@ class TodoControllerTest {
             post("/api/todos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    json.writeValueAsString(new CreateTodoRequest("learn harness", D1))))
+                    json.writeValueAsString(new CreateTodoRequest("learn harness", D1, AT1))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.title").value("learn harness"))
         .andExpect(jsonPath("$.completed").value(false))
-        .andExpect(jsonPath("$.scheduledDate").value("2026-04-20"));
+        .andExpect(jsonPath("$.scheduledDate").value("2026-04-20"))
+        .andExpect(jsonPath("$.scheduledAt").value("2026-04-20T02:30:00Z"));
 
     mvc.perform(get("/api/todos")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
 
@@ -55,7 +59,7 @@ class TodoControllerTest {
     mvc.perform(
             put("/api/todos/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(new UpdateTodoRequest(null, true, null))))
+                .content(json.writeValueAsString(new UpdateTodoRequest(null, true, null, null))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completed").value(true));
 
@@ -68,12 +72,12 @@ class TodoControllerTest {
     mvc.perform(
             post("/api/todos")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(new CreateTodoRequest("a", D1))))
+                .content(json.writeValueAsString(new CreateTodoRequest("a", D1, AT1))))
         .andExpect(status().isCreated());
     mvc.perform(
             post("/api/todos")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(new CreateTodoRequest("b", D2))))
+                .content(json.writeValueAsString(new CreateTodoRequest("b", D2, AT2))))
         .andExpect(status().isCreated());
 
     mvc.perform(get("/api/todos").param("from", "2026-04-20").param("to", "2026-04-20"))

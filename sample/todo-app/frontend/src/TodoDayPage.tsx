@@ -1,4 +1,4 @@
-import { type FormEvent, type ChangeEvent, useMemo, useState } from "react";
+import { type FormEvent, type ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import type { Todo } from "./api";
 import { createTodo, deleteTodo, updateTodo } from "./api";
@@ -6,10 +6,11 @@ import "./App.css";
 import { dayRouteParam, formatDayHeading, isValidDateKey } from "./calendarMonth";
 import { FilterTabBar } from "./FilterTabBar";
 import { renderTodoRows } from "./TodoRow";
+import { defaultHourMinuteForDateKey, localDateTimeToIso } from "./scheduleTime";
 import {
   countTodos,
   filterTodos,
-  sortTodosById,
+  sortTodosByScheduleThenId,
   tabPanelLabelId,
   todoEmptyHint,
   type TodoFilter,
@@ -29,8 +30,19 @@ export function TodoDayPage() {
   const { items, setItems, loading, error, setError } = useInitialTodos(dateKey);
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const [hour, setHour] = useState(9);
+  const [minute, setMinute] = useState(0);
 
-  const sorted = useMemo(() => sortTodosById(items), [items]);
+  const hourOptions = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+  const minuteOptions = useMemo(() => Array.from({ length: 60 }, (_, i) => i), []);
+
+  useEffect(() => {
+    const d = defaultHourMinuteForDateKey(dateKey);
+    setHour(d.hour);
+    setMinute(d.minute);
+  }, [dateKey]);
+
+  const sorted = useMemo(() => sortTodosByScheduleThenId(items), [items]);
   const counts = useMemo(() => countTodos(items), [items]);
   const filtered = useMemo(() => filterTodos(sorted, filter), [sorted, filter]);
   const emptyMessage = useMemo(
@@ -42,13 +54,22 @@ export function TodoDayPage() {
     setTitle(e.target.value);
   }
 
+  function handleHourChange(e: ChangeEvent<HTMLSelectElement>) {
+    setHour(Number(e.target.value));
+  }
+
+  function handleMinuteChange(e: ChangeEvent<HTMLSelectElement>) {
+    setMinute(Number(e.target.value));
+  }
+
   async function handleCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
     setError(null);
     try {
-      const created = await createTodo(t, dateKey);
+      const scheduledAtIso = localDateTimeToIso(dateKey, hour, minute);
+      const created = await createTodo(t, dateKey, scheduledAtIso);
       setTitle("");
       setItems((prev) => [...prev, created]);
     } catch (err) {
@@ -93,16 +114,48 @@ export function TodoDayPage() {
         </header>
 
         <form className="app-form" onSubmit={handleCreate}>
-          <input
-            className="app-input"
-            value={title}
-            onChange={handleTitleChange}
-            placeholder="무엇을 해야 하나요?"
-            aria-label="새 할 일"
-          />
-          <button className="app-btn-primary" type="submit" disabled={!title.trim()}>
-            추가
-          </button>
+          <div className="app-form-row">
+            <input
+              className="app-input"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="무엇을 해야 하나요?"
+              aria-label="새 할 일"
+            />
+            <button className="app-btn-primary" type="submit" disabled={!title.trim()}>
+              추가
+            </button>
+          </div>
+          <div className="app-form-time" role="group" aria-label="일정 시각">
+            <span className="app-form-time-label">시간</span>
+            <select
+              className="app-select"
+              aria-label="일정 시"
+              value={hour}
+              onChange={handleHourChange}
+            >
+              {hourOptions.map((h) => (
+                <option key={h} value={h}>
+                  {String(h).padStart(2, "0")}
+                </option>
+              ))}
+            </select>
+            <span className="app-form-time-sep" aria-hidden="true">
+              :
+            </span>
+            <select
+              className="app-select"
+              aria-label="일정 분"
+              value={minute}
+              onChange={handleMinuteChange}
+            >
+              {minuteOptions.map((m) => (
+                <option key={m} value={m}>
+                  {String(m).padStart(2, "0")}
+                </option>
+              ))}
+            </select>
+          </div>
         </form>
 
         {loading && (

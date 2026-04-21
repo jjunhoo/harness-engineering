@@ -73,8 +73,61 @@ body {
 
 .app-form {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
+}
+
+.app-form-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.app-form-row .app-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-form-time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-form-time-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--app-muted);
+}
+
+.app-form-time-sep {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--app-muted);
+  user-select: none;
+}
+
+.app-select {
+  padding: 0.5rem 0.55rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: #fafafa;
+  color: var(--app-text);
+  min-width: 4.25rem;
+  cursor: pointer;
+}
+
+.app-select:hover {
+  border-color: #cbd5e1;
+}
+
+.app-select:focus {
+  outline: none;
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 15%);
 }
 
 .app-input {

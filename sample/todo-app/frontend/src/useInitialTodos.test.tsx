@@ -21,6 +21,7 @@ describe("useInitialTodos", () => {
         completed: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         scheduledDate: DAY,
+        scheduledAt: "2026-04-21T09:00:00.000Z",
       },
     ]);
     const { result } = renderHook(() => useInitialTodos(DAY));

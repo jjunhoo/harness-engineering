@@ -31,6 +31,7 @@ test("README용 화면 캡처(캘린더·일별·필터)", async ({ page }) => {
           completed: false,
           createdAt: `${t1}T09:00:00.000Z`,
           scheduledDate: t1,
+          scheduledAt: `${t1}T09:00:00.000Z`,
         },
         {
           id: 2,
@@ -38,6 +39,7 @@ test("README용 화면 캡처(캘린더·일별·필터)", async ({ page }) => {
           completed: false,
           createdAt: `${t2}T10:00:00.000Z`,
           scheduledDate: t2,
+          scheduledAt: `${t2}T10:00:00.000Z`,
         },
         {
           id: 3,
@@ -45,6 +47,7 @@ test("README용 화면 캡처(캘린더·일별·필터)", async ({ page }) => {
           completed: true,
           createdAt: `${t3}T11:00:00.000Z`,
           scheduledDate: t3,
+          scheduledAt: `${t3}T11:00:00.000Z`,
         },
       ];
       return route.fulfill({
@@ -62,6 +65,7 @@ test("README용 화면 캡처(캘린더·일별·필터)", async ({ page }) => {
           completed: false,
           createdAt: `${date}T09:00:00.000Z`,
           scheduledDate: date,
+          scheduledAt: `${date}T09:00:00.000Z`,
         },
         {
           id: 11,
@@ -69,6 +73,7 @@ test("README용 화면 캡처(캘린더·일별·필터)", async ({ page }) => {
           completed: true,
           createdAt: `${date}T10:30:00.000Z`,
           scheduledDate: date,
+          scheduledAt: `${date}T10:30:00.000Z`,
         },
       ];
       return route.fulfill({

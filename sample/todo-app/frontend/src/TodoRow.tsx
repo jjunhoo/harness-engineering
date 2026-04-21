@@ -1,5 +1,5 @@
 import type { Todo } from "./api";
-import { formatAddedAt } from "./todoView";
+import { formatScheduledTime } from "./todoView";
 
 type Props = {
   todo: Todo;
@@ -28,8 +28,11 @@ export function TodoRow({ todo, onToggle, onDelete }: Props) {
         <div className={todo.completed ? "app-row-title app-row-title--done" : "app-row-title"}>
           {todo.title}
         </div>
-        <div className="app-row-meta" aria-label={`추가 시각 ${formatAddedAt(todo.createdAt)}`}>
-          {formatAddedAt(todo.createdAt)}
+        <div
+          className="app-row-meta"
+          aria-label={`일정 시각 ${formatScheduledTime(todo.scheduledAt)}`}
+        >
+          {formatScheduledTime(todo.scheduledAt)}
         </div>
       </div>
       <button

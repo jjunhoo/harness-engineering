@@ -147,6 +147,7 @@ describe("CalendarPage", () => {
         completed: false,
         createdAt: "2026-04-15T00:00:00Z",
         scheduledDate: "2026-04-15",
+        scheduledAt: "2026-04-15T09:00:00.000Z",
       },
       {
         id: 2,
@@ -154,6 +155,7 @@ describe("CalendarPage", () => {
         completed: true,
         createdAt: "2026-04-15T00:00:00Z",
         scheduledDate: "2026-04-15",
+        scheduledAt: "2026-04-15T10:00:00.000Z",
       },
     ]);
     render(

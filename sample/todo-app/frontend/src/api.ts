@@ -4,6 +4,7 @@ export type Todo = {
   completed: boolean;
   createdAt: string;
   scheduledDate: string;
+  scheduledAt: string;
 };
 
 const base = "";
@@ -22,11 +23,15 @@ export async function fetchTodosBetween(from: string, to: string): Promise<Todo[
   return r.json();
 }
 
-export async function createTodo(title: string, scheduledDate: string): Promise<Todo> {
+export async function createTodo(
+  title: string,
+  scheduledDate: string,
+  scheduledAtIso: string,
+): Promise<Todo> {
   const r = await fetch(`${base}/api/todos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, scheduledDate }),
+    body: JSON.stringify({ title, scheduledDate, scheduledAt: scheduledAtIso }),
   });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
@@ -34,7 +39,12 @@ export async function createTodo(title: string, scheduledDate: string): Promise<
 
 export async function updateTodo(
   id: number,
-  patch: { title?: string; completed?: boolean; scheduledDate?: string },
+  patch: {
+    title?: string;
+    completed?: boolean;
+    scheduledDate?: string;
+    scheduledAt?: string;
+  },
 ): Promise<Todo> {
   const r = await fetch(`${base}/api/todos/${id}`, {
     method: "PUT",

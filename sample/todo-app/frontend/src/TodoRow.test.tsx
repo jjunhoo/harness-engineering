@@ -10,6 +10,8 @@ const todo = {
   title: "buy milk",
   completed: false,
   createdAt: "2026-04-21T08:46:21.000Z",
+  scheduledDate: "2026-04-21",
+  scheduledAt: "2026-04-21T08:46:21.000Z",
 };
 
 describe("TodoRow", () => {
@@ -37,7 +39,14 @@ describe("renderTodoRows", () => {
     const rows = renderTodoRows(
       [
         todo,
-        { id: 2, title: "b", completed: true, createdAt: todo.createdAt },
+        {
+          id: 2,
+          title: "b",
+          completed: true,
+          createdAt: todo.createdAt,
+          scheduledDate: "2026-04-21",
+          scheduledAt: todo.scheduledAt,
+        },
       ],
       vi.fn(),
       vi.fn(),

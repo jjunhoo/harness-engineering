@@ -35,31 +35,36 @@ describe("api", () => {
     await expect(fetchTodosBetween("2026-04-01", "2026-04-30")).rejects.toThrow("x");
   });
 
-  it("createTodo posts title and scheduledDate", async () => {
+  it("createTodo posts title, scheduledDate, and scheduledAt", async () => {
     const created = {
       id: 2,
       title: "x",
       completed: false,
       createdAt: "t",
       scheduledDate: "2026-04-22",
+      scheduledAt: "2026-04-22T01:00:00.000Z",
     };
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(created), { status: 201 }),
     );
-    await expect(createTodo("x", "2026-04-22")).resolves.toEqual(created);
+    await expect(createTodo("x", "2026-04-22", "2026-04-22T01:00:00.000Z")).resolves.toEqual(created);
     expect(fetch).toHaveBeenCalledWith(
       "/api/todos",
       expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "x", scheduledDate: "2026-04-22" }),
+        body: JSON.stringify({
+          title: "x",
+          scheduledDate: "2026-04-22",
+          scheduledAt: "2026-04-22T01:00:00.000Z",
+        }),
       }),
     );
   });
 
   it("createTodo throws when not ok", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response("bad", { status: 400 }));
-    await expect(createTodo("a", "2026-04-01")).rejects.toThrow("bad");
+    await expect(createTodo("a", "2026-04-01", "2026-04-01T00:00:00.000Z")).rejects.toThrow("bad");
   });
 
   it("updateTodo puts and returns entity", async () => {
@@ -69,6 +74,7 @@ describe("api", () => {
       completed: true,
       createdAt: "t",
       scheduledDate: "2026-04-01",
+      scheduledAt: "2026-04-01T08:00:00.000Z",
     };
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(updated), { status: 200 }),
